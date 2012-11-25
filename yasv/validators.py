@@ -1,3 +1,7 @@
+import string
+from urlparse import urlparse
+
+
 class ValidationError(Exception):
 
     def __init__(self, message=''):
@@ -46,3 +50,18 @@ class IsIn(Validator):
     def __call__(self, presets):
         self._presets = presets
         return self
+
+
+class IsURL(Validator):
+
+    default_template = 'Invalid URL.'
+
+    def valid_condition(self, value):
+        parts = urlparse(value)
+        cond1 = all([parts.scheme, parts.netloc])
+        cond2 = set(parts.netloc) - set(string.letters + string.digits + '-.')
+        cond3 = parts.scheme in ['http', 'https']
+        return cond1 and not cond2 and cond3
+
+    def template_params(self):
+        return ()
