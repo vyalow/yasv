@@ -1,7 +1,6 @@
 import unittest
 
-from yasv.core import Schema, Field
-from yasv.validators import IsIn, Required, ValidationError, IsURL
+from yasv import *
 
 
 class TestSchema(unittest.TestCase):
