@@ -1,4 +1,4 @@
-from validators import ValidationError, Validator
+from yasv.validators import ValidationError, Validator
 
 
 __all__ = ['Schema', 'Field']
