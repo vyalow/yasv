@@ -1,4 +1,4 @@
-validator
+yasv
 =========
 
-Yet another python data validator
+Yet Another Simple Validator
