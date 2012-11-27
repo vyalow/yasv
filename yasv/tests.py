@@ -42,11 +42,23 @@ class TestSchema(unittest.TestCase):
 
     def test_is_url(self):
         s = Schema({'url': Field('URL', IsURL())})
-        d = s.validate({'url': 'http://example.com'})
-        self.assertEqual(d, {'url': 'http://example.com'})
+
+        valid_data = {'url': 'http://example.com'}
+        d = s.validate(valid_data)
+        self.assertEqual(d, valid_data)
+
+        valid_data = {'url': None}
+        d = s.validate(valid_data)
+        self.assertEqual(d, valid_data)
 
         with self.assertRaises(ValidationError):
             s.validate({'url': 'www.example.com'})
+
+    def test_required(self):
+        s = Schema({'foo': Field('Foo', Required())})
+
+        with self.assertRaises(ValidationError):
+            s.validate({'foo': ' '})
 
 
 if __name__ == '__main__':
