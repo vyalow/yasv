@@ -34,7 +34,10 @@ class Required(Validator):
     default_template = 'Empty value.'
 
     def valid_condition(self, value):
-        return value
+        if isinstance(value, (unicode, str)):
+            return value.strip()
+        else:
+            return value
 
     def template_params(self):
         return ()
