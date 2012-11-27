@@ -56,8 +56,9 @@ class IsIn(Validator):
         return ', '.join(map(to_str, self._presets))
 
     def __call__(self, presets):
-        self._presets = presets
-        return self
+        instance = self.__class__(self._template)
+        instance._presets = presets
+        return instance
 
 
 class IsURL(Validator):
@@ -90,5 +91,6 @@ class MinLen(Validator):
             return True
 
     def __call__(self, min_len):
-        self._min_len = min_len
-        return self
+        instance = self.__class__(self._template)
+        instance._min_len = min_len
+        return instance
