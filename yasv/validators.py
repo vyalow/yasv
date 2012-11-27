@@ -51,7 +51,7 @@ class IsIn(Validator):
         return value in self._presets
 
     def template_params(self):
-        return (self._presets,)
+        return (', '.join(self._presets),)
 
     def __call__(self, presets):
         self._presets = presets
