@@ -51,14 +51,16 @@ class TestSchema(unittest.TestCase):
         d = s.validate(valid_data)
         self.assertEqual(d, valid_data)
 
+        invalid_data = {'url': 'www.example.com'}
         with self.assertRaises(ValidationError):
-            s.validate({'url': 'www.example.com'})
+            s.validate(invalid_data)
 
     def test_required(self):
         s = Schema({'foo': Field('Foo', Required())})
 
+        invalid_data = {'foo': ' '}
         with self.assertRaises(ValidationError):
-            s.validate({'foo': ' '})
+            s.validate(invalid_data)
 
 
 if __name__ == '__main__':
