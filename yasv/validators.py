@@ -2,7 +2,8 @@ import string
 from urlparse import urlparse
 
 
-__all__ = ['ValidationError', 'Validator', 'Required', 'IsURL', 'IsIn']
+__all__ = ['ValidationError', 'Validator', 'Required', 'IsURL', 'IsIn',
+           'MinLen']
 
 
 class ValidationError(Exception):
@@ -37,7 +38,7 @@ class Required(Validator):
     default_template = 'Empty value.'
 
     def valid_condition(self, value):
-        if isinstance(value, (unicode, str)):
+        if hasattr(value, 'strip'):
             return value.strip()
         else:
             return value
@@ -45,13 +46,14 @@ class Required(Validator):
 
 class IsIn(Validator):
 
-    default_template = 'Value not in presets: "{0}".'
+    default_template = 'Value not in presets: ({0}).'
 
     def valid_condition(self, value):
         return value in self._presets
 
     def template_params(self):
-        return ', '.join(self._presets)
+        to_str = lambda x: str(x) if not isinstance(x, (unicode, str)) else x
+        return ', '.join(map(to_str, self._presets))
 
     def __call__(self, presets):
         self._presets = presets
@@ -72,3 +74,21 @@ class IsURL(Validator):
         else:
             # here is True because field could be optional
             return True
+
+
+class MinLen(Validator):
+
+    default_template = 'Shorter than min len: "{0}."'
+
+    def template_params(self):
+        return str(self._min_len)
+
+    def valid_condition(self, value):
+        try:
+            return len(value) >= self._min_len
+        except TypeError:
+            return True
+
+    def __call__(self, min_len):
+        self._min_len = min_len
+        return self

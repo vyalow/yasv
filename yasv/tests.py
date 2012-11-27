@@ -31,7 +31,7 @@ class TestSchema(unittest.TestCase):
                     'label': 'Foo'
                 },
                 'bar': {
-                    'errors': ['Value not in presets: "([1, 2],)".'],
+                    'errors': ['Value not in presets: (1, 2).'],
                     'value': 3,
                     'label': 'Bar',
                 },
@@ -57,6 +57,17 @@ class TestSchema(unittest.TestCase):
 
     def test_required(self):
         s = Schema({'foo': Field('Foo', Required())})
+
+        invalid_data = {'foo': ' '}
+        with self.assertRaises(ValidationError):
+            s.validate(invalid_data)
+
+    def test_min_len(self):
+        s = Schema({'foo': Field('Foo', MinLen()(2))})
+
+        valid_data = {'foo': '12'}
+        d = s.validate(valid_data)
+        self.assertEqual(d, valid_data)
 
         invalid_data = {'foo': ' '}
         with self.assertRaises(ValidationError):
