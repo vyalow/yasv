@@ -28,6 +28,9 @@ class Validator(object):
 
         return value
 
+    def template_params(self):
+        return ()
+
 
 class Required(Validator):
 
@@ -39,9 +42,6 @@ class Required(Validator):
         else:
             return value
 
-    def template_params(self):
-        return ()
-
 
 class IsIn(Validator):
 
@@ -51,7 +51,7 @@ class IsIn(Validator):
         return value in self._presets
 
     def template_params(self):
-        return (', '.join(self._presets),)
+        return ', '.join(self._presets)
 
     def __call__(self, presets):
         self._presets = presets
@@ -72,6 +72,3 @@ class IsURL(Validator):
         else:
             # here is True because field could be optional
             return True
-
-    def template_params(self):
-        return ()
