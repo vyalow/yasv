@@ -36,7 +36,7 @@ class Schema(object):
             })
             for validator in schema_field.validators:
                 try:
-                    value = validator.validate(value)
+                    value = validator.validate(value, data)
                 except ValidationError, e:
                     is_valid = False
                     error_response[schema_key]['errors'].append(e.message)

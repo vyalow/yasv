@@ -18,7 +18,7 @@ class Validator(object):
     def __init__(self, template=None):
         self._template = template
 
-    def validate(self, value):
+    def validate(self, value, data):
         if not self.valid_condition(value):
             if self._template:
                 raise ValidationError(
