@@ -2,8 +2,8 @@ import string
 from urlparse import urlparse
 
 
-__all__ = ['ValidationError', 'Validator', 'Required', 'IsURL', 'IsIn',
-           'MinLen']
+__all__ = ['ValidationError', 'Validator', 'Required', 'required', 'IsURL',
+           'is_url', 'IsIn', 'is_in', 'MinLen', 'min_len']
 
 
 class ValidationError(Exception):
@@ -94,3 +94,9 @@ class MinLen(Validator):
         instance = self.__class__(self._template)
         instance._min_len = min_len
         return instance
+
+
+required = Required()
+is_in = IsIn()
+is_url = IsURL()
+min_len = MinLen()
