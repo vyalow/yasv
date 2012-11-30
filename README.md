@@ -34,3 +34,36 @@ False
 >>> s.get_errors()
 ['Value not in presets: (1, 2).']
 ```
+
+Field access
+
+```
+>>> s.fields['bar'].label
+'Bar'
+>>> s.fields['bar'].data
+3
+>>> s.fields['bar'].errors
+['Value not in presets: (1, 2).']
+```
+
+Custom error message
+
+```python
+from yasv.core import Schema, Field
+from yasv.validators import IsIn
+
+
+is_in = IsIn('Value not in [{0}]')
+
+
+class TestSchema(Schema):
+    foo = Field('Foo', is_in([1, 2]))
+```
+
+```
+>>> s = TestSchema({'foo': 3})
+>>> s.is_valid()
+False
+>>> s.get_errors()
+['Value not in [1, 2]']
+```
