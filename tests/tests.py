@@ -25,6 +25,8 @@ class TestSchema(unittest.TestCase):
         self.assertEqual(s.is_valid(), False)
         self.assertEqual(s._unbound_fields['bar'].errors,
             ['Value not in presets: (1, 2).'])
+        self.assertEqual(s.get_errors(),
+            ['Value not in presets: (1, 2).'])
 
     def test_is_url(self):
         class TestSchema(Schema):

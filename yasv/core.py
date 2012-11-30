@@ -1,5 +1,5 @@
 from yasv.validators import ValidationError, Validator
-from yasv.compat import with_metaclass, iteritems
+from yasv.compat import with_metaclass, iteritems, itervalues
 
 
 __all__ = ['Schema', 'Field']
@@ -91,3 +91,9 @@ class Schema(with_metaclass(SchemaMeta)):
                     field.errors.append(e.message)
 
         return is_valid
+
+    def get_errors(self):
+        """ Return a list of error messages.
+        """
+        return reduce(lambda x, y: x.errors + y.errors,
+            itervalues(self._unbound_fields))
