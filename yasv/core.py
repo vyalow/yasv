@@ -84,10 +84,12 @@ class Schema(with_metaclass(SchemaMeta)):
 
     def is_valid(self):
         is_valid = True
+        self.cleaned_data = {}
         for name, field in iteritems(self._unbound_fields):
             for validator in field.validators:
                 try:
-                    field.data = validator.validate(field.data)
+                    value = self.cleaned_data.get(name, None) or field.data
+                    self.cleaned_data[name] = validator.validate(value)
                 except ValidationError, e:
                     is_valid = False
                     field.errors.append(e.message)
@@ -97,5 +99,4 @@ class Schema(with_metaclass(SchemaMeta)):
     def get_errors(self):
         """ Return a list of error messages.
         """
-        return reduce(lambda x, y: x.errors + y.errors,
-            itervalues(self._unbound_fields))
+        return sum([x.errors for x in itervalues(self._unbound_fields)], [])
