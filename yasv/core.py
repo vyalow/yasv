@@ -47,6 +47,8 @@ class SchemaMeta(type):
                     unbound_field = getattr(cls, name)
                     if isinstance(unbound_field, Field):
                         fields.update({name: unbound_field})
+            assert fields, ('`Schema` subclasses have to define at least one '
+                'unbound `Field` attribute.')
             cls._unbound_fields = fields
         return type.__call__(cls, *args, **kwargs)
 
