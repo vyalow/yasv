@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from yasv.validators import ValidationError, Validator
 from yasv.compat import with_metaclass, iteritems, itervalues
 
@@ -71,21 +73,22 @@ class SchemaMeta(type):
 class Schema(with_metaclass(SchemaMeta)):
 
     def __init__(self, data):
+        self.fields = deepcopy(self._unbound_fields)
         if isinstance(data, dict):
             for name, value in iteritems(data):
                 if name in self._unbound_fields:
-                    self._unbound_fields[name].data = value
+                    self.fields[name].data = value
         else:
             for name in dir(data):
                 if not name.startswith('_') and not name.startswith('__'):
                     value = getattr(data, name)
                     if name in self._unbound_fields:
-                        self._unbound_fields[name].data = value
+                        self.fields[name].data = value
 
     def is_valid(self):
         is_valid = True
         self.cleaned_data = {}
-        for name, field in iteritems(self._unbound_fields):
+        for name, field in iteritems(self.fields):
             for validator in field.validators:
                 try:
                     value = self.cleaned_data.get(name, None) or field.data
@@ -99,4 +102,4 @@ class Schema(with_metaclass(SchemaMeta)):
     def get_errors(self):
         """ Return a list of error messages.
         """
-        return sum([x.errors for x in itervalues(self._unbound_fields)], [])
+        return sum([x.errors for x in itervalues(self.fields)], [])
