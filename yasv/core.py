@@ -10,6 +10,11 @@ __all__ = ['Schema', 'Field']
 class Field(object):
 
     def __init__(self, *args):
+        """ Construct a new `Field` instance.
+
+        Accepts a list of args. If arg is str or unicode - it sets as label.
+        If arg is instance of `Validator` - it appends to a validators list.
+        """
         self.validators = []
         self.label = None
         self.data = None
@@ -73,19 +78,32 @@ class SchemaMeta(type):
 class Schema(with_metaclass(SchemaMeta)):
 
     def __init__(self, data):
+        """ Construct a new `Schema` instance.
+
+        Accepts data as a dict or namedtuple or any object with attributes.
+        Creates fields dict with data.
+        """
         self.fields = deepcopy(self._unbound_fields)
         if isinstance(data, dict):
             for name, value in iteritems(data):
-                if name in self._unbound_fields:
-                    self.fields[name].data = value
+                self._add_data_to_field(name, value)
         else:
             for name in dir(data):
                 if not name.startswith('_') and not name.startswith('__'):
                     value = getattr(data, name)
-                    if name in self._unbound_fields:
-                        self.fields[name].data = value
+                    self._add_data_to_field(name, value)
+
+    def _add_data_to_field(self, name, value):
+        if name in self.fields:
+            self.fields[name].data = value
 
     def is_valid(self):
+        """ Validate field value.
+
+        Constructs a cleaned_data dict with valid, modified data.
+        Constructs an errors list with error messages.
+        Returns validation status.
+        """
         is_valid = True
         self.cleaned_data = {}
         for name, field in iteritems(self.fields):
