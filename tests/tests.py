@@ -23,7 +23,7 @@ class TestSchema(unittest.TestCase):
 
         s = TestSchema({'foo': 1, 'bar': 3})
         self.assertEqual(s.is_valid(), False)
-        self.assertEqual(s._unbound_fields['bar'].errors,
+        self.assertEqual(s.fields['bar'].errors,
             ['Value not in presets: (1, 2).'])
         self.assertEqual(s.get_errors(),
             ['Value not in presets: (1, 2).'])
