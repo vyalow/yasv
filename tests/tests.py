@@ -28,6 +28,25 @@ class TestSchema(unittest.TestCase):
         self.assertEqual(s.get_errors(),
             ['Value not in presets: (1, 2).'])
 
+    def test_templates(self):
+        required = Required('Is required.')
+
+        class TestSchema(Schema):
+            foo = Field('Foo', required)
+
+        s = TestSchema({})
+        s.is_valid()
+        self.assertEqual(s.get_errors(),
+            ['Is required.'])
+
+        class TestSchema(Schema):
+            foo = Field('Foo', Required())
+
+        s = TestSchema({})
+        s.is_valid()
+        self.assertEqual(s.get_errors(),
+            ['Empty value.'])
+
     def test_is_url(self):
         class TestSchema(Schema):
             url = Field('URL', IsURL())

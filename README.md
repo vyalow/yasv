@@ -6,8 +6,7 @@ Yet Another Simple Validator
 ### Example
 
 ```python
-from yasv.core import Schema, Field
-from yasv.validators import is_in, required
+from yasv import Schema, Field, is_in, required
 
 
 class TestSchema(Schema):
@@ -49,8 +48,7 @@ Field access
 Custom error message
 
 ```python
-from yasv.core import Schema, Field
-from yasv.validators import IsIn
+from yasv import Schema, Field, IsIn
 
 
 is_in = IsIn('Value not in [{0}]')
