@@ -70,14 +70,23 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({})
         self.assertEqual(s.is_valid(), False)
 
-    def test_min_len(self):
+    def test_length(self):
         class TestSchema(Schema):
-            foo = Field('Foo', MinLen()(2))
+            foo = Field('Foo', length(min=2, max=4))
 
         s = TestSchema({'foo': '12'})
         self.assertEqual(s.is_valid(), True)
 
         s = TestSchema({'foo': ' '})
+        self.assertEqual(s.is_valid(), False)
+
+        s = TestSchema({'foo': '12345'})
+        self.assertEqual(s.is_valid(), False)
+
+        s = TestSchema({'foo': None})
+        self.assertEqual(s.is_valid(), False)
+
+        s = TestSchema({'foo': 1})
         self.assertEqual(s.is_valid(), False)
 
 

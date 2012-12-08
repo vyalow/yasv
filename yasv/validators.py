@@ -1,4 +1,5 @@
 import re
+import sys
 import abc
 
 from yasv.compat import with_metaclass
@@ -8,7 +9,7 @@ __all__ = [
     'Required', 'required',
     'IsURL', 'is_url',
     'IsIn', 'is_in',
-    'MinLen', 'min_len'
+    'Length', 'length'
 ]
 
 
@@ -33,7 +34,7 @@ class Validator(with_metaclass(abc.ABCMeta)):
         if not (self.specified_type() and self.on_missing() and self.on_blank()
             and self.on_value()):
             template = self._get_template()
-            raise ValidationError(template.format(self.template_params()))
+            raise ValidationError(template.format(*self.template_params()))
 
         return value
 
@@ -116,6 +117,12 @@ class String(Optional):
             return False
 
 
+class HasLength(Optional):
+
+    def specified_type(self):
+        return True if hasattr(self.value, '__len__') else False
+
+
 class IsIn(Optional):
 
     default_template = 'Value not in presets: ({0}).'
@@ -125,7 +132,7 @@ class IsIn(Optional):
 
     def template_params(self):
         to_str = lambda x: str(x) if not isinstance(x, (unicode, str)) else x
-        return ', '.join(map(to_str, self._presets))
+        return ', '.join(map(to_str, self._presets)),
 
     def __call__(self, presets):
         instance = self.__class__(self._template)
@@ -152,22 +159,23 @@ class IsURL(String):
         return IsURL(self._template, self._require_tld)
 
 
-class MinLen(String):
+class Length(HasLength):
 
-    default_template = 'Shorter than min len: "{0}."'
+    default_template = 'Length must be between {0} and {1}.'
 
     def template_params(self):
-        return str(self._min_len)
+        return str(self._min), str(self._max)
 
     def on_value(self):
-        try:
-            return len(self.value) >= self._min_len
-        except TypeError:
-            return True
+        return self._max >= len(self.value) >= self._min
 
-    def __call__(self, min_len):
+    def __call__(self, min=-1, max=sys.maxint):
+        assert min != -1 or max != sys.maxint, ('At least one of '
+            '`min` or `max` must be specified.')
+        assert min <= max, '`min` cannot be more than `max`.'
         instance = self.__class__(self._template)
-        instance._min_len = min_len
+        instance._min = min
+        instance._max = max
         return instance
 
 
@@ -176,4 +184,4 @@ not_blank = NotBlank()
 not_empty = NotEmpty()
 is_in = IsIn()
 is_url = IsURL()
-min_len = MinLen()
+length = Length()
