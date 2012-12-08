@@ -39,26 +39,22 @@ class Validator(with_metaclass(abc.ABCMeta)):
             template = self._get_template()
             raise ValidationError(template.format(*self.template_params()))
 
-        return value
+        return self.value
 
     def template_params(self):
         return ()
 
-    @abc.abstractmethod
     def on_missing(self):
-        """"""
+        return True
 
-    @abc.abstractmethod
     def on_blank(self):
-        """"""
+        return True
 
-    @abc.abstractmethod
     def on_value(self):
-        """"""
+        return True
 
-    @abc.abstractmethod
     def specified_type(self):
-        """"""
+        return True
 
     @property
     @abc.abstractmethod
@@ -69,22 +65,7 @@ class Validator(with_metaclass(abc.ABCMeta)):
         return self._template if self._template else self.default_template
 
 
-class Optional(Validator):
-
-    def on_missing(self):
-        return True
-
-    def on_blank(self):
-        return True
-
-    def on_value(self):
-        return True
-
-    def specified_type(self):
-        return True
-
-
-class Required(Optional):
+class Required(Validator):
 
     default_template = 'Value is required.'
 
@@ -92,7 +73,7 @@ class Required(Optional):
         return False if isinstance(self.value, NotSpecifiedValue) else True
 
 
-class NotBlank(Optional):
+class NotBlank(Validator):
 
     default_template = "Value couldn't be blank."
 
@@ -111,7 +92,7 @@ class NotEmpty(Required, NotBlank):
     default_template = "Value couldn't be empty."
 
 
-class String(Optional):
+class String(Validator):
 
     def specified_type(self):
         if isinstance(self.value, (str, unicode)):
@@ -120,13 +101,13 @@ class String(Optional):
             return False
 
 
-class HasLength(Optional):
+class HasLength(Validator):
 
     def specified_type(self):
         return True if hasattr(self.value, '__len__') else False
 
 
-class PresetsBase(Optional):
+class PresetsBase(Validator):
     """ Base class for `IsIn` and `NotIn` validators.
     """
     def template_params(self):
@@ -164,7 +145,8 @@ class IsURL(String):
         self._require_tld = require_tld
 
         tld_part = (require_tld and ur'\.[a-z]{2,10}' or u'')
-        regex = ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$' % tld_part
+        regex = (ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
+            ur'(:[0-9]+)?(\/.*)?$' % tld_part)
         self._regex = re.compile(regex, re.IGNORECASE)
 
     def on_value(self):
