@@ -17,7 +17,7 @@ class TestSchema(Schema):
 
 Valid data
 
-```
+```python
 >>> s = TestSchema({'foo': 1, 'bar': 2})
 >>> s.is_valid()
 True
@@ -27,7 +27,7 @@ True
 
 Invalid data
 
-```
+```python
 >>> s = TestSchema({'foo': 1, 'bar': 3})
 >>> s.is_valid()
 False
@@ -37,7 +37,7 @@ False
 
 Field access
 
-```
+```python
 >>> s.fields['bar'].label
 'Bar'
 >>> s.fields['bar'].data
@@ -60,7 +60,7 @@ class TestSchema(Schema):
     foo = Field('Foo', is_in([1, 2]))
 ```
 
-```
+```python
 >>> s = TestSchema({'foo': 3})
 >>> s.is_valid()
 False
