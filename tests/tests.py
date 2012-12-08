@@ -45,7 +45,7 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({})
         s.is_valid()
         self.assertEqual(s.get_errors(),
-            ['Empty value.'])
+            ['Value is required.'])
 
     def test_is_url(self):
         class TestSchema(Schema):
@@ -55,7 +55,7 @@ class TestSchema(unittest.TestCase):
         self.assertEqual(s.is_valid(), True)
 
         s = TestSchema({'url': None})
-        self.assertEqual(s.is_valid(), True)
+        self.assertEqual(s.is_valid(), False)
 
         s = TestSchema({'url': 'www.example.com'})
         self.assertEqual(s.is_valid(), False)
@@ -64,7 +64,7 @@ class TestSchema(unittest.TestCase):
         class TestSchema(Schema):
             foo = Field('Foo', Required())
 
-        s = TestSchema({'foo': ' '})
+        s = TestSchema({})
         self.assertEqual(s.is_valid(), False)
 
     def test_min_len(self):

@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from yasv.validators import ValidationError, Validator
+from yasv.validators import ValidationError, Validator, NotSpecifiedValue
 from yasv.compat import with_metaclass, iteritems, itervalues
 
 
@@ -17,7 +17,7 @@ class Field(object):
         """
         self.validators = []
         self.label = None
-        self.data = None
+        self.data = NotSpecifiedValue()
         self.errors = []
 
         for arg in args:

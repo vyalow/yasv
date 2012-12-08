@@ -1,9 +1,16 @@
+import abc
 import string
 from urlparse import urlparse
 
+from yasv.compat import with_metaclass
 
-__all__ = ['ValidationError', 'Validator', 'Required', 'required', 'IsURL',
-           'is_url', 'IsIn', 'is_in', 'MinLen', 'min_len']
+
+__all__ = [
+    'Required', 'required',
+    'IsURL', 'is_url',
+    'IsIn', 'is_in',
+    'MinLen', 'min_len'
+]
 
 
 class ValidationError(Exception):
@@ -13,43 +20,92 @@ class ValidationError(Exception):
         self.error_response = {}
 
 
-class Validator(object):
+class NotSpecifiedValue(object):
+    pass
+
+
+class Validator(with_metaclass(abc.ABCMeta)):
 
     def __init__(self, template=None):
         self._template = template
 
     def validate(self, value):
-        if not self.valid_condition(value):
-            if self._template:
-                raise ValidationError(
-                    self._template.format(self.template_params()))
-            else:
-                raise ValidationError(
-                    self.default_template.format(self.template_params()))
+        self.value = value
+        if not (self.on_missing() and self.on_blank() and self.on_value()):
+            template = self._get_template()
+            raise ValidationError(template.format(self.template_params()))
 
         return value
 
     def template_params(self):
         return ()
 
+    @abc.abstractmethod
+    def on_missing(self):
+        """"""
 
-class Required(Validator):
+    @abc.abstractmethod
+    def on_blank(self):
+        """"""
 
-    default_template = 'Empty value.'
+    @abc.abstractmethod
+    def on_value(self):
+        """"""
 
-    def valid_condition(self, value):
-        if hasattr(value, 'strip'):
-            return value.strip()
+    @property
+    @abc.abstractmethod
+    def default_template(self):
+        """"""
+
+    def _get_template(self):
+        return self._template if self._template else self.default_template
+
+
+class Optional(Validator):
+
+    def on_missing(self):
+        return True
+
+    def on_blank(self):
+        return True
+
+    def on_value(self):
+        return True
+
+
+class Required(Optional):
+
+    default_template = 'Value is required.'
+
+    def on_missing(self):
+        return False if isinstance(self.value, NotSpecifiedValue) else True
+
+
+class NotBlank(Optional):
+
+    default_template = "Value couldn't be blank."
+
+    def on_blank(self):
+        if hasattr(self.value, 'strip'):
+            self.value = self.value.strip()
+
+        if self.value in ('', [], {}, None, set()):
+            return False
         else:
-            return value
+            return True
 
 
-class IsIn(Validator):
+class NotEmpty(Required, NotBlank):
+
+    default_template = "Value couldn't be empty."
+
+
+class IsIn(Optional):
 
     default_template = 'Value not in presets: ({0}).'
 
-    def valid_condition(self, value):
-        return value in self._presets
+    def on_value(self):
+        return self.value in self._presets
 
     def template_params(self):
         to_str = lambda x: str(x) if not isinstance(x, (unicode, str)) else x
@@ -61,32 +117,29 @@ class IsIn(Validator):
         return instance
 
 
-class IsURL(Validator):
+class IsURL(Optional):
 
     default_template = 'Invalid URL.'
 
-    def valid_condition(self, value):
-        if value:
-            parts = urlparse(value)
+    def on_value(self):
+        if self.value:
+            parts = urlparse(self.value)
             cond1 = all([parts.scheme, parts.netloc])
             cond2 = set(parts.netloc) - set(string.letters + string.digits + '-.')
             cond3 = parts.scheme in ['http', 'https']
             return cond1 and not cond2 and cond3
-        else:
-            # here is True because field could be optional
-            return True
 
 
-class MinLen(Validator):
+class MinLen(NotBlank):
 
     default_template = 'Shorter than min len: "{0}."'
 
     def template_params(self):
         return str(self._min_len)
 
-    def valid_condition(self, value):
+    def on_value(self):
         try:
-            return len(value) >= self._min_len
+            return len(self.value) >= self._min_len
         except TypeError:
             return True
 
@@ -97,6 +150,8 @@ class MinLen(Validator):
 
 
 required = Required()
+not_blank = NotBlank()
+not_empty = NotEmpty()
 is_in = IsIn()
 is_url = IsURL()
 min_len = MinLen()
