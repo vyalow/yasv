@@ -6,10 +6,13 @@ from yasv.compat import with_metaclass
 
 
 __all__ = [
-    'Required', 'required',
-    'IsURL', 'is_url',
-    'IsIn', 'is_in',
-    'Length', 'length'
+    'required', 'Required',
+    'not_blank', 'NotBlank',
+    'not_empty', 'NotEmpty',
+    'is_url', 'IsURL',
+    'is_in', 'IsIn',
+    'not_in', 'NotIn',
+    'length', 'Length',
 ]
 
 
@@ -123,13 +126,9 @@ class HasLength(Optional):
         return True if hasattr(self.value, '__len__') else False
 
 
-class IsIn(Optional):
-
-    default_template = 'Value not in presets: ({0}).'
-
-    def on_value(self):
-        return self.value in self._presets
-
+class PresetsBase(Optional):
+    """ Base class for `IsIn` and `NotIn` validators.
+    """
     def template_params(self):
         to_str = lambda x: str(x) if not isinstance(x, (unicode, str)) else x
         return ', '.join(map(to_str, self._presets)),
@@ -138,6 +137,22 @@ class IsIn(Optional):
         instance = self.__class__(self._template)
         instance._presets = presets
         return instance
+
+
+class IsIn(PresetsBase):
+
+    default_template = 'Value not in presets: ({0}).'
+
+    def on_value(self):
+        return self.value in self._presets
+
+
+class NotIn(PresetsBase):
+
+    default_template = 'Value have not to be in presets: ({0}).'
+
+    def on_value(self):
+        return self.value not in self._presets
 
 
 class IsURL(String):
@@ -183,5 +198,6 @@ required = Required()
 not_blank = NotBlank()
 not_empty = NotEmpty()
 is_in = IsIn()
+not_in = NotIn()
 is_url = IsURL()
 length = Length()

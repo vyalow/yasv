@@ -89,6 +89,26 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({'foo': 1})
         self.assertEqual(s.is_valid(), False)
 
+    def test_is_in(self):
+        class TestSchema(Schema):
+            foo = Field('Foo', is_in([1, '!']))
+
+        s = TestSchema({'foo': ''})
+        self.assertEqual(s.is_valid(), False)
+
+        s = TestSchema({'foo': 1})
+        self.assertEqual(s.is_valid(), True)
+
+    def test_not_in(self):
+        class TestSchema(Schema):
+            foo = Field('Foo', not_in([1, '!']))
+
+        s = TestSchema({'foo': ''})
+        self.assertEqual(s.is_valid(), True)
+
+        s = TestSchema({'foo': 1})
+        self.assertEqual(s.is_valid(), False)
+
 
 if __name__ == '__main__':
     unittest.main()
