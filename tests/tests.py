@@ -54,6 +54,9 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({'url': 'http://example.com'})
         self.assertEqual(s.is_valid(), True)
 
+        s = TestSchema({'url': 3})
+        self.assertEqual(s.is_valid(), False)
+
         s = TestSchema({'url': None})
         self.assertEqual(s.is_valid(), False)
 

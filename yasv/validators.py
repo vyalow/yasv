@@ -1,6 +1,5 @@
+import re
 import abc
-import string
-from urlparse import urlparse
 
 from yasv.compat import with_metaclass
 
@@ -31,7 +30,8 @@ class Validator(with_metaclass(abc.ABCMeta)):
 
     def validate(self, value):
         self.value = value
-        if not (self.on_missing() and self.on_blank() and self.on_value()):
+        if not (self.specified_type() and self.on_missing() and self.on_blank()
+            and self.on_value()):
             template = self._get_template()
             raise ValidationError(template.format(self.template_params()))
 
@@ -52,6 +52,10 @@ class Validator(with_metaclass(abc.ABCMeta)):
     def on_value(self):
         """"""
 
+    @abc.abstractmethod
+    def specified_type(self):
+        """"""
+
     @property
     @abc.abstractmethod
     def default_template(self):
@@ -70,6 +74,9 @@ class Optional(Validator):
         return True
 
     def on_value(self):
+        return True
+
+    def specified_type(self):
         return True
 
 
@@ -100,6 +107,15 @@ class NotEmpty(Required, NotBlank):
     default_template = "Value couldn't be empty."
 
 
+class String(Optional):
+
+    def specified_type(self):
+        if isinstance(self.value, (str, unicode)):
+            return True
+        else:
+            return False
+
+
 class IsIn(Optional):
 
     default_template = 'Value not in presets: ({0}).'
@@ -117,20 +133,26 @@ class IsIn(Optional):
         return instance
 
 
-class IsURL(Optional):
+class IsURL(String):
 
     default_template = 'Invalid URL.'
 
+    def __init__(self, template=None, require_tld=True):
+        super(IsURL, self).__init__(template)
+        self._require_tld = require_tld
+
+        tld_part = (require_tld and ur'\.[a-z]{2,10}' or u'')
+        regex = ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(\/.*)?$' % tld_part
+        self._regex = re.compile(regex, re.IGNORECASE)
+
     def on_value(self):
-        if self.value:
-            parts = urlparse(self.value)
-            cond1 = all([parts.scheme, parts.netloc])
-            cond2 = set(parts.netloc) - set(string.letters + string.digits + '-.')
-            cond3 = parts.scheme in ['http', 'https']
-            return cond1 and not cond2 and cond3
+        return True if self._regex.match(self.value) else False
+
+    def __deepcopy__(self, memo):
+        return IsURL(self._template, self._require_tld)
 
 
-class MinLen(NotBlank):
+class MinLen(String):
 
     default_template = 'Shorter than min len: "{0}."'
 
