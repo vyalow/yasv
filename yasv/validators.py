@@ -1,6 +1,7 @@
 import re
 import sys
 import abc
+import types
 
 from yasv.compat import with_metaclass
 
@@ -29,8 +30,15 @@ class NotSpecifiedValue(object):
 
 class Validator(with_metaclass(abc.ABCMeta)):
 
-    def __init__(self, template=None):
-        self._template = template
+    def __init__(self, *args):
+        self._template = None
+        for arg in args:
+            if isinstance(arg, types.FunctionType):
+                setattr(self,
+                    arg.__name__, types.MethodType(arg, self))
+
+            elif isinstance(arg, (str, unicode)):
+                self._template = arg
 
     def validate(self, value, field):
         self.value = value
