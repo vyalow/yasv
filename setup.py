@@ -1,14 +1,24 @@
-from setuptools import setup, find_packages
+import os
+import sys
+from setuptools import setup
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+import yasv
 
 
 setup(
     name='yasv',
-    version='0.1',
-    packages=find_packages(),
+    version=yasv.__version__,
+    url='https://github.com/vyalow/yasv',
     author='Vladimir Vyalov',
     author_email='vyalov.v@gmail.com',
     description=('Yet Another Simple Validator'),
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha'
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
+    packages=['yasv'],
 )
