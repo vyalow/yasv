@@ -32,12 +32,11 @@ class Validator(with_metaclass(abc.ABCMeta)):
     def __init__(self, template=None):
         self._template = template
 
-    def validate(self, value):
+    def validate(self, value, field):
         self.value = value
         if not (self.specified_type() and self.on_missing() and self.on_blank()
             and self.on_value()):
-            template = self._get_template()
-            raise ValidationError(template.format(*self.template_params()))
+            raise ValidationError(self.process_template(field))
 
         return self.value
 
@@ -61,8 +60,9 @@ class Validator(with_metaclass(abc.ABCMeta)):
     def default_template(self):
         """"""
 
-    def _get_template(self):
-        return self._template if self._template else self.default_template
+    def process_template(self, field):
+        template = self._template if self._template else self.default_template
+        return template.format(*self.template_params())
 
 
 class Required(Validator):

@@ -110,7 +110,7 @@ class Schema(with_metaclass(SchemaMeta)):
             for validator in field.validators:
                 try:
                     value = self.cleaned_data.get(name, None) or field.data
-                    self.cleaned_data[name] = validator.validate(value)
+                    self.cleaned_data[name] = validator.validate(value, field)
                 except ValidationError, e:
                     is_valid = False
                     field.errors.append(e.message)
