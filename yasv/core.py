@@ -90,8 +90,12 @@ class Schema(with_metaclass(SchemaMeta)):
         else:
             for name in dir(data):
                 if not name.startswith('_') and not name.startswith('__'):
-                    value = getattr(data, name)
-                    self._add_data_to_field(name, value)
+                    try:
+                        value = getattr(data, name)
+                    except AttributeError:
+                        pass
+                    else:
+                        self._add_data_to_field(name, value)
 
     def _add_data_to_field(self, name, value):
         if name in self.fields:
