@@ -156,6 +156,9 @@ class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
     def get_regexp_str(self):
         """"""
 
+    def on_value(self):
+        return True if self.regex.match(self.value) else False
+
     def __deepcopy__(self, memo):
         return self.__class__(*self._args, **self._kwargs)
 
@@ -169,9 +172,6 @@ class IsURL(RegexpValidator):
         tld_part = (require_tld and ur'\.[a-z]{2,10}' or u'')
         return (ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
             ur'(:[0-9]+)?(\/.*)?$' % tld_part)
-
-    def on_value(self):
-        return True if self.regex.match(self.value) else False
 
 
 class Length(HasLength):
