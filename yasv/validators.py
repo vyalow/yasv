@@ -30,12 +30,11 @@ class NotSpecifiedValue(object):
 
 class Validator(with_metaclass(abc.ABCMeta)):
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         self._template = None
         for arg in args:
             if isinstance(arg, types.FunctionType):
-                setattr(self,
-                    arg.__name__, types.MethodType(arg, self))
+                setattr(self, arg.__name__, types.MethodType(arg, self))
 
             elif isinstance(arg, (str, unicode)):
                 self._template = arg
@@ -144,24 +143,35 @@ class NotIn(PresetsBase):
         return self.value not in self._presets
 
 
-class IsURL(String):
+class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
+
+    def __init__(self, *args, **kwargs):
+        super(RegexpValidator, self).__init__(args, kwargs)
+        self._args = args
+        self._kwargs = kwargs
+
+        self.regex = re.compile(self.get_regexp_str(), re.IGNORECASE)
+
+    @abc.abstractmethod
+    def get_regexp_str(self):
+        """"""
+
+    def __deepcopy__(self, memo):
+        return self.__class__(*self._args, **self._kwargs)
+
+
+class IsURL(RegexpValidator):
 
     default_template = 'Invalid URL.'
 
-    def __init__(self, template=None, require_tld=True):
-        super(IsURL, self).__init__(template)
-        self._require_tld = require_tld
-
+    def get_regexp_str(self):
+        require_tld = self._kwargs.get('require_tld', True)
         tld_part = (require_tld and ur'\.[a-z]{2,10}' or u'')
-        regex = (ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
+        return (ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
             ur'(:[0-9]+)?(\/.*)?$' % tld_part)
-        self._regex = re.compile(regex, re.IGNORECASE)
 
     def on_value(self):
-        return True if self._regex.match(self.value) else False
-
-    def __deepcopy__(self, memo):
-        return IsURL(self._template, self._require_tld)
+        return True if self.regex.match(self.value) else False
 
 
 class Length(HasLength):
