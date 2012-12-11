@@ -25,7 +25,9 @@ class ValidationError(Exception):
 
 
 class NotSpecifiedValue(object):
-    pass
+
+    def __str__(self):
+        return ''
 
 
 class Validator(with_metaclass(abc.ABCMeta)):
