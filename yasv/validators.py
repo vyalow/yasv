@@ -187,7 +187,7 @@ class Length(HasLength):
         return self._max >= len(self.value) >= self._min
 
     def __call__(self, min=-1, max=sys.maxint):
-        assert min == -1 or max == sys.maxint, ('`min` and `max` parameters '
+        assert min != -1 and max != sys.maxint, ('`min` and `max` parameters '
             'must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
         instance = self.__class__(self._template)
