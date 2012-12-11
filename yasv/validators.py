@@ -34,6 +34,8 @@ class Validator(with_metaclass(abc.ABCMeta)):
 
     def __init__(self, *args, **kwargs):
         self._template = None
+        self._args = args
+        self._kwargs = kwargs
         for arg in args:
             if isinstance(arg, types.FunctionType):
                 setattr(self, arg.__name__, types.MethodType(arg, self))
@@ -124,7 +126,7 @@ class PresetsBase(Validator):
         return ', '.join(map(to_str, self._presets)),
 
     def __call__(self, presets):
-        instance = self.__class__(self._template)
+        instance = self.__class__(*self._args, **self._kwargs)
         instance._presets = presets
         return instance
 
@@ -148,10 +150,7 @@ class NotIn(PresetsBase):
 class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
 
     def __init__(self, *args, **kwargs):
-        super(RegexpValidator, self).__init__(args, kwargs)
-        self._args = args
-        self._kwargs = kwargs
-
+        super(RegexpValidator, self).__init__(*args, **kwargs)
         self.regex = re.compile(self.get_regexp_str(), re.IGNORECASE)
 
     @abc.abstractmethod
@@ -190,7 +189,7 @@ class Length(HasLength):
         assert min != -1 and max != sys.maxint, ('`min` and `max` parameters '
             'must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
-        instance = self.__class__(self._template)
+        instance = self.__class__(*self._args, **self._kwargs)
         instance._min = min
         instance._max = max
         return instance
