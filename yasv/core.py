@@ -118,6 +118,7 @@ class Schema(with_metaclass(SchemaMeta)):
                 except ValidationError, e:
                     is_valid = False
                     field.errors.append(e.message)
+                    break
 
         return is_valid
 
