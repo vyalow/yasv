@@ -18,7 +18,8 @@ __all__ = [
 
 
 class ValidationError(Exception):
-
+    """ Raised when a validator fails to validate its input.
+    """
     def __init__(self, message=''):
         super(ValidationError, self).__init__(message)
         self.error_response = {}
@@ -31,7 +32,8 @@ class NotSpecifiedValue(object):
 
 
 class Validator(with_metaclass(abc.ABCMeta)):
-
+    """ Base abstract class for any validators.
+    """
     def __init__(self, *args, **kwargs):
         self._template = None
         self._args = args
@@ -77,7 +79,8 @@ class Validator(with_metaclass(abc.ABCMeta)):
 
 
 class Required(Validator):
-
+    """ Validates that the field contains data.
+    """
     default_template = 'Value is required.'
 
     def on_missing(self):
@@ -85,7 +88,8 @@ class Required(Validator):
 
 
 class NotBlank(Validator):
-
+    """ Validates that the data is not emty string or list or dict etc.
+    """
     default_template = "Value couldn't be blank."
 
     def on_blank(self):
@@ -99,12 +103,15 @@ class NotBlank(Validator):
 
 
 class NotEmpty(Required, NotBlank):
-
+    """ Validates that the field contains data and it is not blank.
+    """
     default_template = "Value couldn't be empty."
 
 
 class String(Validator):
-
+    """ Base class for validators. Check that the data is instance of
+    str or unicode.
+    """
     def specified_type(self):
         if isinstance(self.value, (str, unicode)):
             return True
@@ -113,7 +120,8 @@ class String(Validator):
 
 
 class HasLength(Validator):
-
+    """ Base class for validators. Check that the data has __len__ method.
+    """
     def specified_type(self):
         return True if hasattr(self.value, '__len__') else False
 
@@ -132,7 +140,8 @@ class PresetsBase(Validator):
 
 
 class IsIn(PresetsBase):
-
+    """ Validates that the data is in presets.
+    """
     default_template = 'Value not in presets: ({0}).'
 
     def on_value(self):
@@ -140,7 +149,8 @@ class IsIn(PresetsBase):
 
 
 class NotIn(PresetsBase):
-
+    """ Validates that the data is not in presets.
+    """
     default_template = 'Value have not to be in presets: ({0}).'
 
     def on_value(self):
@@ -148,7 +158,8 @@ class NotIn(PresetsBase):
 
 
 class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
-
+    """ Base class for regexp validators.
+    """
     def __init__(self, *args, **kwargs):
         super(RegexpValidator, self).__init__(*args, **kwargs)
         self.regex = re.compile(self.get_regexp_str(), re.IGNORECASE)
@@ -165,7 +176,8 @@ class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
 
 
 class IsURL(RegexpValidator):
-
+    """ Validates that the data is a valid URL.
+    """
     default_template = 'Invalid URL.'
 
     def get_regexp_str(self):
@@ -176,7 +188,9 @@ class IsURL(RegexpValidator):
 
 
 class Length(HasLength):
-
+    """ Validates that the length of data more than min length and
+    less than max.
+    """
     default_template = 'Length must be between {0} and {1}.'
 
     def template_params(self):
