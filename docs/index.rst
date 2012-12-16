@@ -1,22 +1,7 @@
-.. yasv documentation master file, created by
-   sphinx-quickstart on Sun Dec 16 16:36:07 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+yasv — Yet Another Simple Validator
+===================================
 
-Welcome to yasv's documentation!
-================================
+yasv is a simple python library for data validation.
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+Why yasv?
+---------
