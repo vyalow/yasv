@@ -1,67 +1,8 @@
 yasv
-=========
+====
 
 Yet Another Simple Validator
 
-### Example
+Read the `docs`_.
 
-```python
-from yasv import Schema, Field, is_in, required
-
-
-class TestSchema(Schema):
-    foo = Field('Foo', required)
-    bar = Field('Bar', is_in([1, 2]))
-```
-
-Valid data
-
-```python
->>> s = TestSchema({'foo': 1, 'bar': 2})
->>> s.is_valid()
-True
->>> s.cleaned_data
-{'foo': 1, 'bar': 2}
-```
-
-Invalid data
-
-```python
->>> s = TestSchema({'foo': 1, 'bar': 3})
->>> s.is_valid()
-False
->>> s.get_errors()
-['Value not in presets: (1, 2).']
-```
-
-Field access
-
-```python
->>> s.fields['bar'].label
-'Bar'
->>> s.fields['bar'].data
-3
->>> s.fields['bar'].errors
-['Value not in presets: (1, 2).']
-```
-
-Custom error message
-
-```python
-from yasv import Schema, Field, IsIn
-
-
-is_in = IsIn('Value not in [{0}]')
-
-
-class TestSchema(Schema):
-    foo = Field('Foo', is_in([1, 2]))
-```
-
-```python
->>> s = TestSchema({'foo': 3})
->>> s.is_valid()
-False
->>> s.get_errors()
-['Value not in [1, 2]']
-```
+.. _`docs`: https://yasv.readthedocs.org/en/latest/
