@@ -3,6 +3,6 @@ yasv
 
 Yet Another Simple Validator
 
-Read the `docs`_.
+Read the [docs][docs].
 
-.. _`docs`: https://yasv.readthedocs.org/en/latest/
+[docs]: https://yasv.readthedocs.org/en/latest/
