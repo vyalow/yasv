@@ -34,7 +34,7 @@ Then we create instance of User() and set one parameter 'name'. ::
 
     user = User(name='George')
 
-Now we can validate user's data:::
+Now we can validate user's data: ::
 
     s = UserSchema(user)
     s.is_valid()
