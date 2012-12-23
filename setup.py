@@ -50,6 +50,20 @@ try:
 finally:
     meta_fh.close()
 
+# -*- Installation Requires -*-
+
+
+def strip_comments(l):
+    return l.split('#', 1)[0].strip()
+
+
+def reqs(*f):
+    return list(filter(None, [strip_comments(l) for l in open(
+        os.path.join(here, 'requirements', *f)).readlines()]))
+
+
+install_requires = reqs('default.txt')
+
 setup(
     name='yasv',
     version=meta['VERSION'],
@@ -59,4 +73,5 @@ setup(
     description=('Yet Another Simple Validator'),
     classifiers=classifiers,
     packages=['yasv'],
+    install_requires=install_requires,
 )

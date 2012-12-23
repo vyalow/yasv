@@ -1,7 +1,8 @@
 from copy import deepcopy
 
+from six import with_metaclass, iteritems, itervalues, string_types
+
 from yasv.validators import ValidationError, Validator, NotSpecifiedValue
-from yasv.compat import with_metaclass, iteritems, itervalues, string_types
 
 
 __all__ = ['Schema', 'Field']

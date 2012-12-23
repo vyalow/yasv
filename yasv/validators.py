@@ -3,7 +3,7 @@ import sys
 import abc
 import types
 
-from yasv.compat import with_metaclass, string_types
+from six import with_metaclass, string_types
 
 
 __all__ = [
