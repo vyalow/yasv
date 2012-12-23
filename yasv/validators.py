@@ -3,7 +3,7 @@ import sys
 import abc
 import types
 
-from yasv.compat import with_metaclass
+from yasv.compat import with_metaclass, string_types
 
 
 __all__ = [
@@ -21,8 +21,8 @@ class ValidationError(Exception):
     """ Raised when a validator fails to validate its input.
     """
     def __init__(self, message=''):
-        super(ValidationError, self).__init__(message)
         self.error_response = {}
+        self.message = message
 
 
 class NotSpecifiedValue(object):
@@ -42,7 +42,7 @@ class Validator(with_metaclass(abc.ABCMeta)):
             if isinstance(arg, types.FunctionType):
                 setattr(self, arg.__name__, types.MethodType(arg, self))
 
-            elif isinstance(arg, (str, unicode)):
+            elif isinstance(arg, string_types):
                 self._template = arg
 
     def validate(self, value, field):
@@ -113,7 +113,7 @@ class String(Validator):
     str or unicode.
     """
     def specified_type(self):
-        if isinstance(self.value, (str, unicode)):
+        if isinstance(self.value, string_types):
             return True
         else:
             return False
@@ -130,7 +130,7 @@ class PresetsBase(Validator):
     """ Base class for `IsIn` and `NotIn` validators.
     """
     def template_params(self):
-        to_str = lambda x: str(x) if not isinstance(x, (unicode, str)) else x
+        to_str = lambda x: str(x) if not isinstance(x, string_types) else x
         return ', '.join(map(to_str, self._presets)),
 
     def __call__(self, presets):
@@ -182,9 +182,9 @@ class IsURL(RegexpValidator):
 
     def get_regexp_str(self):
         require_tld = self._kwargs.get('require_tld', True)
-        tld_part = (require_tld and ur'\.[a-z]{2,10}' or u'')
-        return (ur'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
-            ur'(:[0-9]+)?(\/.*)?$' % tld_part)
+        tld_part = (require_tld and r'\.[a-z]{2,10}' or '')
+        return (r'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
+            r'(:[0-9]+)?(\/.*)?$' % tld_part)
 
 
 class Length(HasLength):
@@ -199,8 +199,8 @@ class Length(HasLength):
     def on_value(self):
         return self._max >= len(self.value) >= self._min
 
-    def __call__(self, min=-1, max=sys.maxint):
-        assert min != -1 and max != sys.maxint, ('`min` and `max` parameters '
+    def __call__(self, min=-1, max=sys.maxsize):
+        assert min != -1 and max != sys.maxsize, ('`min` and `max` parameters '
             'must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
         instance = self.__class__(*self._args, **self._kwargs)

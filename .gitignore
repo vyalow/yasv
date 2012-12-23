@@ -33,3 +33,9 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Dosc
+_build
+
+# Scripts
+upload.sh

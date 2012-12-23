@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from yasv.validators import ValidationError, Validator, NotSpecifiedValue
-from yasv.compat import with_metaclass, iteritems, itervalues
+from yasv.compat import with_metaclass, iteritems, itervalues, string_types
 
 
 __all__ = ['Schema', 'Field']
@@ -21,7 +21,7 @@ class Field(object):
         self.errors = []
 
         for arg in args:
-            if isinstance(arg, (str, unicode)):
+            if isinstance(arg, string_types):
                 self.label = arg
             elif isinstance(arg, Validator):
                 self.validators.append(arg)
@@ -115,7 +115,7 @@ class Schema(with_metaclass(SchemaMeta)):
                 try:
                     value = self.cleaned_data.get(name, None) or field.data
                     self.cleaned_data[name] = validator.validate(value, field)
-                except ValidationError, e:
+                except ValidationError as e:
                     is_valid = False
                     field.errors.append(e.message)
                     break

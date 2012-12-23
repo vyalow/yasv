@@ -7,7 +7,7 @@ Why yasv?
 ---------
 
 * it has simple schema definition syntax similar to django or SQLAlchemy models;
-* Python 2.7, 3.0 support;
+* Python 2.7, 3.2, 3.3 support;
 * simple and minimalistic, no html form overhead;
 
 Installation
