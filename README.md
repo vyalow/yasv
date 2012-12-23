@@ -5,4 +5,4 @@ yasv
 
 Yet Another Simple Validator
 
-The latest documentation for simplejson can be read online here: https://yasv.readthedocs.org.
+The latest documentation for yasv can be read online here: https://yasv.readthedocs.org.
