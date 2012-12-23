@@ -1,4 +1,7 @@
 from .core import Field, Schema
 from .validators import *
 
-__version__ = '0.1.6'
+VERSION = (0, 1, 7, 'dev')
+__version__ = '.'.join(map(str, VERSION[0:3])) + ''.join(VERSION[3:])
+
+# -eof meta-
