@@ -38,12 +38,18 @@ class Validator(with_metaclass(abc.ABCMeta)):
         self._template = None
         self._args = args
         self._kwargs = kwargs
+
         for arg in args:
             if isinstance(arg, types.FunctionType):
                 setattr(self, arg.__name__, types.MethodType(arg, self))
 
             elif isinstance(arg, string_types):
                 self._template = arg
+
+        if self._template:
+            self.template = self._template
+        else:
+            self.template = self.default_template
 
     def validate(self, value, field):
         self.value = value
@@ -74,8 +80,7 @@ class Validator(with_metaclass(abc.ABCMeta)):
         """"""
 
     def process_template(self, field):
-        template = self._template if self._template else self.default_template
-        return template.format(*self.template_params())
+        return self.template.format(*self.template_params())
 
 
 class Required(Validator):
