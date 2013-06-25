@@ -18,7 +18,7 @@ class Field(object):
         """
         self.validators = []
         self.label = None
-        self.data = NotSpecifiedValue()
+        self.raw_data = NotSpecifiedValue()
         self.errors = []
 
         for arg in args:
@@ -100,32 +100,30 @@ class Schema(with_metaclass(SchemaMeta)):
 
     def _add_data_to_field(self, name, value):
         if name in self.fields:
-            self.fields[name].data = value
+            self.fields[name].raw_data = value
 
     def is_valid(self):
         """ Validate field value.
 
-        Constructs a cleaned_data dict with valid, modified data.
         Constructs an errors list with error messages.
         Returns validation status.
         """
         is_valid = True
-        self.cleaned_data = {}
+        for field in itervalues(self.fields):
+            field.clean_data = field.raw_data
+
         for name, field in iteritems(self.fields):
             for validator in field.validators:
                 try:
-                    value = self.cleaned_data.get(name, None) or field.data
-                    self.fields[name].data = validator.validate(value, field, self.fields)
+                    validator.validate(field, self.fields)
                 except ValidationError as e:
                     is_valid = False
                     field.errors.append(e.message)
-                    break
-        for name in self.fields.keys():
-            self.cleaned_data[name] = self.fields[name].data
 
         return is_valid
 
     def get_errors(self):
         """ Return a list of error messages.
         """
-        return sum([x.errors for x in itervalues(self.fields)], [])
+        return {name: field.errors for name, field in iteritems(self.fields)
+                if field.errors}
