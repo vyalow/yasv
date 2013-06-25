@@ -84,7 +84,10 @@ class Schema(with_metaclass(SchemaMeta)):
         Accepts data as a dict or namedtuple or any object with attributes.
         Creates fields dict with data.
         """
-        self.fields = deepcopy(self._unbound_fields)
+        self._fields = {}
+        for name, field in iteritems(self._unbound_fields):
+            self._fields[name] = deepcopy(field)
+
         if isinstance(data, dict):
             for name, value in iteritems(data):
                 self._add_data_to_field(name, value)
@@ -98,9 +101,32 @@ class Schema(with_metaclass(SchemaMeta)):
                     else:
                         self._add_data_to_field(name, value)
 
+    def __getitem__(self, key):
+        return self._fields[key]
+
+    def __setitem__(self, key, value):
+        self._fields[key] = value
+
+    def __delitem__(self, key):
+        del self._fields[key]
+
+    def __contains__(self, item):
+        return item in self._fields
+
+    def __iter__(self):
+        return iter(self._fields)
+
+    def values(self):
+        for value in itervalues(self._fields):
+            yield value
+
+    def items(self):
+        for key, value in iteritems(self._fields):
+            yield key, value
+
     def _add_data_to_field(self, name, value):
-        if name in self.fields:
-            self.fields[name].raw_data = value
+        if name in self:
+            self[name].raw_data = value
 
     def is_valid(self):
         """ Validate field value.
@@ -109,13 +135,13 @@ class Schema(with_metaclass(SchemaMeta)):
         Returns validation status.
         """
         is_valid = True
-        for field in itervalues(self.fields):
+        for field in self.values():
             field.clean_data = field.raw_data
 
-        for name, field in iteritems(self.fields):
+        for name, field in self.items():
             for validator in field.validators:
                 try:
-                    validator.validate(field, self.fields)
+                    validator.validate(field, self)
                 except ValidationError as e:
                     is_valid = False
                     field.errors.append(e.message)
@@ -125,5 +151,5 @@ class Schema(with_metaclass(SchemaMeta)):
     def get_errors(self):
         """ Return a list of error messages.
         """
-        return {name: field.errors for name, field in iteritems(self.fields)
+        return {name: field.errors for name, field in self.items()
                 if field.errors}

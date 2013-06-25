@@ -23,7 +23,7 @@ class TestSchema(unittest.TestCase):
 
         s = TestSchema({'foo': 1, 'bar': 3})
         self.assertEqual(s.is_valid(), False)
-        self.assertEqual(s.fields['bar'].errors,
+        self.assertEqual(s['bar'].errors,
                          ['Value not in presets: (1, 2).'])
         self.assertEqual(s.get_errors(),
                          {'bar': ['Value not in presets: (1, 2).']})
@@ -43,8 +43,8 @@ class TestSchema(unittest.TestCase):
 
         b = BallSchema({'price': 1, 'type': 'basketball'})
         self.assertEqual(b.is_valid(), True)
-        self.assertEqual(b.fields['type'].clean_data, 'football')
-        self.assertEqual(b.fields['type'].raw_data, 'basketball')
+        self.assertEqual(b['type'].clean_data, 'football')
+        self.assertEqual(b['type'].raw_data, 'basketball')
 
     def test_templates(self):
         required = Required('Is required.')
