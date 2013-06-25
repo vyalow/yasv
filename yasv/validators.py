@@ -7,6 +7,7 @@ from six import with_metaclass, string_types
 
 
 __all__ = [
+    'Validator',
     'required', 'Required',
     'not_blank', 'NotBlank',
     'not_empty', 'NotEmpty',
@@ -14,6 +15,7 @@ __all__ = [
     'is_in', 'IsIn',
     'not_in', 'NotIn',
     'length', 'Length',
+    'in_range', 'InRange',
 ]
 
 
@@ -31,7 +33,7 @@ class NotSpecifiedValue(object):
         return ''
 
 
-class Validator(with_metaclass(abc.ABCMeta)):
+class Validator(object):
     """ Base abstract class for any validators.
     """
     def __init__(self, *args, **kwargs):
@@ -51,10 +53,11 @@ class Validator(with_metaclass(abc.ABCMeta)):
         else:
             self.template = self.default_template
 
-    def validate(self, value, field):
+    def validate(self, value, field, fields):
         self.value = value
+        self.fields = fields
         if not (self.specified_type() and self.on_missing() and self.on_blank()
-            and self.on_value()):
+           and self.on_value()):
             raise ValidationError(self.process_template(field))
 
         return self.value
@@ -75,9 +78,8 @@ class Validator(with_metaclass(abc.ABCMeta)):
         return True
 
     @property
-    @abc.abstractmethod
     def default_template(self):
-        """"""
+        return ''
 
     def process_template(self, field):
         return self.template.format(*self.template_params())
@@ -189,7 +191,7 @@ class IsURL(RegexpValidator):
         require_tld = self._kwargs.get('require_tld', True)
         tld_part = (require_tld and r'\.[a-z]{2,10}' or '')
         return (r'^[a-z]+://([^/:]+%s|([0-9]{1,3}\.){3}[0-9]{1,3})'
-            r'(:[0-9]+)?(\/.*)?$' % tld_part)
+                r'(:[0-9]+)?(\/.*)?$' % tld_part)
 
 
 class Length(HasLength):
@@ -205,8 +207,28 @@ class Length(HasLength):
         return self._max >= len(self.value) >= self._min
 
     def __call__(self, min=-1, max=sys.maxsize):
-        assert min != -1 and max != sys.maxsize, ('`min` and `max` parameters '
-            'must be specified.')
+        assert min != -1 and max != sys.maxsize,\
+            ('`min` and `max` parameters must be specified.')
+        assert min <= max, '`min` cannot be more than `max`.'
+        instance = self.__class__(*self._args, **self._kwargs)
+        instance._min = min
+        instance._max = max
+        return instance
+
+
+class InRange(Validator):
+    """Validates that data more than min and less than max"""
+    default_template = "Value must be between {0} and {1}."
+
+    def template_params(self):
+        return str(self._min), str(self._max)
+
+    def on_value(self):
+        return self._max >= self.value >= self._min
+
+    def __call__(self, min=None, max=None):
+        assert min is not None and max is not None,\
+            ('`min` and `max` parameters must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
         instance = self.__class__(*self._args, **self._kwargs)
         instance._min = min
@@ -221,3 +243,4 @@ is_in = IsIn()
 not_in = NotIn()
 is_url = IsURL()
 length = Length()
+in_range = InRange()

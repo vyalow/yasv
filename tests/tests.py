@@ -89,6 +89,16 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({'foo': 1})
         self.assertEqual(s.is_valid(), False)
 
+    def test_in_range(self):
+        class TestSchema(Schema):
+            foo = Field('Foo', in_range(min=2, max=4))
+
+        s = TestSchema({'foo': 3})
+        self.assertEqual(s.is_valid(), True)
+
+        s = TestSchema({'foo': 12345})
+        self.assertEqual(s.is_valid(), False)
+
     def test_is_in(self):
         class TestSchema(Schema):
             foo = Field('Foo', is_in([1, '!']))
