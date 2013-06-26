@@ -32,9 +32,9 @@ class TestSchema(unittest.TestCase):
 
             def on_value(self):
                 if self.value > 10:
-                    self.fields['type'].clea_data = 'volleyball'
+                    self.fields['type'].cleaned_data = 'volleyball'
                 else:
-                    self.fields['type'].clean_data = 'football'
+                    self.fields['type'].cleaned_data = 'football'
                 return True
 
         class BallSchema(Schema):
@@ -43,7 +43,7 @@ class TestSchema(unittest.TestCase):
 
         b = BallSchema({'price': 1, 'type': 'basketball'})
         self.assertEqual(b.is_valid(), True)
-        self.assertEqual(b['type'].clean_data, 'football')
+        self.assertEqual(b['type'].cleaned_data, 'football')
         self.assertEqual(b['type'].raw_data, 'basketball')
 
     def test_templates(self):

@@ -136,7 +136,7 @@ class Schema(with_metaclass(SchemaMeta)):
         """
         is_valid = True
         for field in self.values():
-            field.clean_data = field.raw_data
+            field.cleaned_data = field.raw_data
 
         for name, field in self.items():
             for validator in field.validators:
