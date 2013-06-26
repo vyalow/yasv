@@ -19,13 +19,38 @@ class Field(object):
         self.validators = []
         self.label = None
         self.raw_data = NotSpecifiedValue()
+        self._cleaned_data = NotSpecifiedValue()
         self.errors = []
+        self.is_valid = True
+        self._is_validated = False
 
         for arg in args:
             if isinstance(arg, string_types):
                 self.label = arg
             elif isinstance(arg, Validator):
                 self.validators.append(arg)
+
+    def __getattribute__(self, name):
+        if name == 'cleaned_data':
+            self.validate()
+            return self._cleaned_data
+        return object.__getattribute__(self, name)
+
+    def __setattr__(self, name, value):
+        if name == 'cleaned_data':
+            self._cleaned_data = value
+            return self._cleaned_data
+        return object.__setattr__(self, name, value)
+
+    def validate(self):
+        if not self._is_validated:
+            self._is_validated = True
+            for validator in self.validators:
+                try:
+                    validator.validate(self, self._schema)
+                except ValidationError as e:
+                    self.is_valid = False
+                    self.errors.append(e.message)
 
 
 class SchemaMeta(type):
@@ -87,6 +112,7 @@ class Schema(with_metaclass(SchemaMeta)):
         self._fields = {}
         for name, field in iteritems(self._unbound_fields):
             self._fields[name] = deepcopy(field)
+            self._fields[name]._schema = self
 
         if isinstance(data, dict):
             for name, value in iteritems(data):
@@ -127,6 +153,7 @@ class Schema(with_metaclass(SchemaMeta)):
     def _add_data_to_field(self, name, value):
         if name in self:
             self[name].raw_data = value
+            self[name].cleaned_data = value
 
     def is_valid(self):
         """ Validate field value.
@@ -136,15 +163,9 @@ class Schema(with_metaclass(SchemaMeta)):
         """
         is_valid = True
         for field in self.values():
-            field.cleaned_data = field.raw_data
-
-        for name, field in self.items():
-            for validator in field.validators:
-                try:
-                    validator.validate(field, self)
-                except ValidationError as e:
-                    is_valid = False
-                    field.errors.append(e.message)
+            field.validate()
+            if not field.is_valid:
+                is_valid = False
 
         return is_valid
 
