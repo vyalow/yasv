@@ -81,8 +81,11 @@ class Validator(object):
     def default_template(self):
         return ''
 
+    def get_template(self, field):
+        return self.template
+
     def process_template(self, field):
-        return self.template.format(*self.template_params())
+        return self.get_template(field).format(*self.template_params())
 
     def context(self, *args, **kwargs):
         instance = self.__class__(*self._args, **self._kwargs)
