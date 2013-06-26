@@ -3,7 +3,7 @@ import sys
 import abc
 import types
 
-from six import with_metaclass, string_types
+from six import with_metaclass, string_types, iteritems
 
 
 __all__ = [
@@ -84,6 +84,12 @@ class Validator(object):
     def process_template(self, field):
         return self.template.format(*self.template_params())
 
+    def context(self, *args, **kwargs):
+        instance = self.__class__(*self._args, **self._kwargs)
+        for name, arg in iteritems(kwargs):
+            setattr(instance, name, arg)
+        return instance
+
 
 class Required(Validator):
     """ Validates that the field contains data.
@@ -138,12 +144,10 @@ class PresetsBase(Validator):
     """
     def template_params(self):
         to_str = lambda x: str(x) if not isinstance(x, string_types) else x
-        return ', '.join(map(to_str, self._presets)),
+        return ', '.join(map(to_str, self.presets)),
 
     def __call__(self, presets):
-        instance = self.__class__(*self._args, **self._kwargs)
-        instance._presets = presets
-        return instance
+        return self.context(presets=presets)
 
 
 class IsIn(PresetsBase):
@@ -152,7 +156,7 @@ class IsIn(PresetsBase):
     default_template = 'Value not in presets: ({0}).'
 
     def on_value(self):
-        return self.value in self._presets
+        return self.value in self.presets
 
 
 class NotIn(PresetsBase):
@@ -161,7 +165,7 @@ class NotIn(PresetsBase):
     default_template = 'Value have not to be in presets: ({0}).'
 
     def on_value(self):
-        return self.value not in self._presets
+        return self.value not in self.presets
 
 
 class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
@@ -201,19 +205,16 @@ class Length(HasLength):
     default_template = 'Length must be between {0} and {1}.'
 
     def template_params(self):
-        return str(self._min), str(self._max)
+        return str(self.min), str(self.max)
 
     def on_value(self):
-        return self._max >= len(self.value) >= self._min
+        return self.max >= len(self.value) >= self.min
 
     def __call__(self, min=-1, max=sys.maxsize):
         assert min != -1 and max != sys.maxsize,\
             ('`min` and `max` parameters must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
-        instance = self.__class__(*self._args, **self._kwargs)
-        instance._min = min
-        instance._max = max
-        return instance
+        return self.context(min=min, max=max)
 
 
 class InRange(Validator):
@@ -221,19 +222,16 @@ class InRange(Validator):
     default_template = "Value must be between {0} and {1}."
 
     def template_params(self):
-        return str(self._min), str(self._max)
+        return str(self.min), str(self.max)
 
     def on_value(self):
-        return self._max >= self.value >= self._min
+        return self.max >= self.value >= self.min
 
     def __call__(self, min=None, max=None):
         assert min is not None and max is not None,\
             ('`min` and `max` parameters must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
-        instance = self.__class__(*self._args, **self._kwargs)
-        instance._min = min
-        instance._max = max
-        return instance
+        return self.context(min=min, max=max)
 
 
 required = Required()
