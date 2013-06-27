@@ -53,11 +53,14 @@ class Validator(object):
         else:
             self.template = self.default_template
 
+    def apply_rules(self):
+        return (self.specified_type() and self.on_missing() and self.on_blank()
+                and self.on_value())
+
     def validate(self, field, fields):
         self.value = field.cleaned_data
         self.fields = fields
-        if not (self.specified_type() and self.on_missing() and self.on_blank()
-           and self.on_value()):
+        if not self.apply_rules():
             raise ValidationError(self.process_template(field))
 
         field.cleaned_data = self.value
