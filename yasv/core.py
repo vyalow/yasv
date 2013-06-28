@@ -23,12 +23,16 @@ class Field(object):
         self.errors = []
         self.is_valid = True
         self._is_validated = False
+        self.name = ''
 
         for arg in args:
             if isinstance(arg, string_types):
                 self.label = arg
             elif isinstance(arg, Validator):
                 self.validators.append(arg)
+
+    def __repr__(self):
+        return '<yasv.core.Field object {0}>'.format(self.name)
 
     def __getattribute__(self, name):
         if name == 'cleaned_data':
@@ -113,13 +117,14 @@ class Schema(with_metaclass(SchemaMeta)):
         for name, field in iteritems(self._unbound_fields):
             self._fields[name] = deepcopy(field)
             self._fields[name]._schema = self
+            self._fields[name].name = name
 
         if isinstance(data, dict):
             for name, value in iteritems(data):
                 self._add_data_to_field(name, value)
         else:
             for name in dir(data):
-                if not name.startswith('_') and not name.startswith('__'):
+                if not name.startswith('_'):
                     try:
                         value = getattr(data, name)
                     except AttributeError:
