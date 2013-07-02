@@ -42,10 +42,7 @@ class Validator(object):
         self._kwargs = kwargs
 
         for arg in args:
-            if isinstance(arg, types.FunctionType):
-                setattr(self, arg.__name__, types.MethodType(arg, self))
-
-            elif isinstance(arg, string_types):
+            if isinstance(arg, string_types):
                 self._template = arg
 
         if self._template:

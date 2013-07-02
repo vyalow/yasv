@@ -135,18 +135,6 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({'foo': 1})
         self.assertEqual(s.is_valid(), False)
 
-    def test_process_template(self):
-        def get_template(self, field):
-            return 'Error with "%s". %s' % (field.label, self.template)
-        required = Required(get_template)
-
-        class TestSchema(Schema):
-            foo = Field('Foo', required)
-
-        s = TestSchema({})
-        s.is_valid()
-        self.assertEqual(s.get_errors(),
-                         {'foo': ['Error with "Foo". Value is required.']})
 
 if __name__ == '__main__':
     unittest.main()
