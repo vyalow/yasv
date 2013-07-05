@@ -21,7 +21,7 @@ class Field(object):
         self.raw_data = NotSpecifiedValue()
         self._cleaned_data = NotSpecifiedValue()
         self.errors = []
-        self.is_valid = True
+        self._is_valid = True
         self._is_validated = False
         self.name = ''
 
@@ -34,17 +34,23 @@ class Field(object):
     def __repr__(self):
         return '<yasv.core.Field object {0}>'.format(self.name)
 
-    def __getattribute__(self, name):
-        if name == 'cleaned_data':
+    @property
+    def cleaned_data(self):
+        if not self._is_validated:
             self.validate()
-            return self._cleaned_data
-        return object.__getattribute__(self, name)
+        return self._cleaned_data
 
-    def __setattr__(self, name, value):
-        if name == 'cleaned_data':
-            self._cleaned_data = value
-            return self._cleaned_data
-        return object.__setattr__(self, name, value)
+    @cleaned_data.setter
+    def cleaned_data(self, value):
+        self._cleaned_data = value
+        self._is_valid = True
+        self._is_validated = True
+
+    @property
+    def is_valid(self):
+        if not self._is_validated:
+            self.validate()
+        return self._is_valid
 
     def validate(self):
         if not self._is_validated:
@@ -53,7 +59,7 @@ class Field(object):
                 try:
                     validator.validate(self, self._schema)
                 except ValidationError as e:
-                    self.is_valid = False
+                    self._is_valid = False
                     self.errors.append(e.message)
 
 
@@ -158,7 +164,7 @@ class Schema(with_metaclass(SchemaMeta)):
     def _add_data_to_field(self, name, value):
         if name in self:
             self[name].raw_data = value
-            self[name].cleaned_data = value
+            self[name]._cleaned_data = value
 
     def is_valid(self):
         """ Validate field value.
@@ -168,7 +174,6 @@ class Schema(with_metaclass(SchemaMeta)):
         """
         is_valid = True
         for field in self.values():
-            field.validate()
             if not field.is_valid:
                 is_valid = False
 
