@@ -60,7 +60,7 @@ class Validator(object):
         if not self.apply_rules():
             raise ValidationError(self.process_template(field))
 
-        field.cleaned_data = self.value
+        field._cleaned_data = self.value
 
     def template_params(self):
         return ()
