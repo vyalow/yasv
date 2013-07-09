@@ -119,6 +119,8 @@ class Schema(with_metaclass(SchemaMeta)):
         Accepts data as a dict or namedtuple or any object with attributes.
         Creates fields dict with data.
         """
+        self._is_valid = True
+        self._is_validated = False
         self._fields = {}
         for name, field in iteritems(self._unbound_fields):
             self._fields[name] = deepcopy(field)
@@ -166,21 +168,27 @@ class Schema(with_metaclass(SchemaMeta)):
             self[name].raw_data = value
             self[name]._cleaned_data = value
 
-    def is_valid(self):
-        """ Validate field value.
-
-        Constructs an errors list with error messages.
-        Returns validation status.
+    def validate(self):
+        """ Validate fields values if they are not validated.
+        Set schema validation status.
         """
-        is_valid = True
-        for field in self.values():
-            if not field.is_valid:
-                is_valid = False
+        if not self._is_validated:
+            for field in self.values():
+                if not field.is_valid:
+                    self._is_valid = False
 
-        return is_valid
+    @property
+    def is_valid(self):
+        """ Return schema validation status. Run `validate` if needed.
+        """
+        if not self._is_validated:
+            self.validate()
+        return self._is_valid
 
     def get_errors(self):
-        """ Return a list of error messages.
+        """ Return a dict of field_name: [field_errors].
         """
+        if not self._is_validated:
+            self.validate()
         return {name: field.errors for name, field in self.items()
                 if field.errors}

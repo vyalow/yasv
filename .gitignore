@@ -39,3 +39,6 @@ _build
 
 # Scripts
 upload.sh
+
+#IDE
+.idea
