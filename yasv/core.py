@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from six import with_metaclass, iteritems, itervalues, string_types
 
 from yasv.validators import ValidationError, Validator, NotSpecifiedValue
@@ -123,7 +121,7 @@ class Schema(with_metaclass(SchemaMeta)):
         self._is_validated = False
         self._fields = {}
         for name, field in iteritems(self._unbound_fields):
-            self._fields[name] = deepcopy(field)
+            self._fields[name] = field.__class__(field.label, *field.validators)
             self._fields[name]._schema = self
             self._fields[name].name = name
 

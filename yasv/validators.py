@@ -185,9 +185,6 @@ class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
     def on_value(self):
         return True if not self.value or self.regex.match(self.value) else False
 
-    def __deepcopy__(self, memo):
-        return self.__class__(*self._args, **self._kwargs)
-
 
 class IsURL(RegexpValidator):
     """ Validates that the data is a valid URL.
