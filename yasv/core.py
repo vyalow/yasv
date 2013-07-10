@@ -43,7 +43,6 @@ class Field(object):
     @cleaned_data.setter
     def cleaned_data(self, value):
         self._cleaned_data = value
-        self._is_valid = True
         self._is_validated = True
 
     @property

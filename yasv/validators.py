@@ -1,7 +1,6 @@
 import re
 import sys
 import abc
-import types
 
 from six import with_metaclass, string_types, iteritems
 
