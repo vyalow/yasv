@@ -8,12 +8,14 @@ __all__ = ['Schema', 'Field']
 
 class Field(object):
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """ Construct a new `Field` instance.
 
         Accepts a list of args. If arg is str or unicode - it sets as label.
         If arg is instance of `Validator` - it appends to a validators list.
         """
+        self._args = args
+        self._kwargs = kwargs
         self.validators = []
         self.label = None
         self.raw_data = NotSpecifiedValue()
@@ -121,7 +123,7 @@ class Schema(with_metaclass(SchemaMeta)):
         self._is_validated = False
         self._fields = {}
         for name, field in iteritems(self._unbound_fields):
-            self._fields[name] = field.__class__(field.label, *field.validators)
+            self._fields[name] = field.__class__(*field._args, **field._kwargs)
             self._fields[name]._schema = self
             self._fields[name].name = name
 
