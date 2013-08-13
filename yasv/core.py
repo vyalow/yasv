@@ -1,7 +1,7 @@
 from six import with_metaclass, iteritems, itervalues, string_types
 
-from yasv.validators import ValidationError, Validator, NotSpecifiedValue
-from yasv.errors import InvalidCleanedDataError
+from yasv.validators import Validator, NotSpecifiedValue
+from yasv.errors import InvalidCleanedDataError, ValidationError
 
 
 __all__ = ['Schema', 'Field']
