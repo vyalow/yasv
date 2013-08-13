@@ -17,7 +17,7 @@ class Field(object):
         self._args = args
         self._kwargs = kwargs
         self.validators = []
-        self.label = None
+        self._label = None
         self.raw_data = NotSpecifiedValue()
         self._cleaned_data = NotSpecifiedValue()
         self.errors = []
@@ -27,7 +27,7 @@ class Field(object):
 
         for arg in args:
             if isinstance(arg, string_types):
-                self.label = arg
+                self._label = arg
             elif isinstance(arg, Validator):
                 self.validators.append(arg)
 
@@ -44,6 +44,14 @@ class Field(object):
     def cleaned_data(self, value):
         self._cleaned_data = value
         self._is_validated = True
+
+    @property
+    def label(self):
+        return self._label if self._label else self.name
+
+    @label.setter
+    def label(self, val):
+        self._label = val
 
     @property
     def is_valid(self):
