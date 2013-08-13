@@ -24,9 +24,9 @@ class TestSchema(unittest.TestCase):
         s = TestSchema({'foo': 1, 'bar': 3})
         self.assertEqual(s.is_valid, False)
         self.assertEqual(s['bar'].errors,
-                         ['Value not in presets: (1, 2).'])
+                         ['Value have to be in: ([1, 2]).'])
         self.assertEqual(s.get_errors(),
-                         {'bar': ['Value not in presets: (1, 2).']})
+                         {'bar': ['Value have to be in: ([1, 2]).']})
 
         class PriceValidator(Validator):
 
@@ -47,14 +47,14 @@ class TestSchema(unittest.TestCase):
         self.assertEqual(b['type'].raw_data, 'basketball')
 
     def test_templates(self):
-        required = Required('Is required.')
+        required = Required()
 
         class TestSchema(Schema):
             foo = Field('Foo', required)
 
         s = TestSchema({})
         s.is_valid
-        self.assertEqual(s.get_errors(), {'foo': ['Is required.']})
+        self.assertEqual(s.get_errors(), {'foo': ['Value is required.']})
 
         class TestSchema(Schema):
             foo = Field('Foo', Required())

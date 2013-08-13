@@ -21,34 +21,12 @@ __all__ = [
 class Validator(object):
     """ Base abstract class for any validators.
     """
+    templates = {}
+
     def __init__(self, *args, **kwargs):
-        self._template = None
         self._args = args
         self._kwargs = kwargs
-
-        for arg in args:
-            if isinstance(arg, string_types):
-                self._template = arg
-
-        if self._template:
-            self.template = self._template
-        else:
-            self.template = self.default_template
-
-    def apply_rules(self):
-        return self.specified_type() and self.on_missing() and self.on_value()
-
-    def validate(self, field, fields):
-        self.value = field.cleaned_data
-        self.fields = fields
-        self.field = field
-        if not self.apply_rules():
-            raise ValidationError(self.process_template(field))
-
-        field._cleaned_data = self.value
-
-    def template_params(self):
-        return ()
+        self._message = ''
 
     def on_missing(self):
         return True
@@ -59,15 +37,17 @@ class Validator(object):
     def specified_type(self):
         return True
 
-    @property
-    def default_template(self):
-        return ''
+    def apply_rules(self):
+        return self.specified_type() and self.on_missing() and self.on_value()
 
-    def get_template(self, field):
-        return self.template
+    def validate(self, field, fields):
+        self.value = field.cleaned_data
+        self.fields = fields
+        self.field = field
+        if not self.apply_rules():
+            raise ValidationError(self._message)
 
-    def process_template(self, field):
-        return self.get_template(field).format(*self.template_params())
+        field._cleaned_data = self.value
 
     def context(self, *args, **kwargs):
         instance = self.__class__(*self._args, **self._kwargs)
@@ -75,14 +55,22 @@ class Validator(object):
             setattr(instance, name, arg)
         return instance
 
+    def message(self, key, *args):
+        self._message = self.templates.get(key, '').format(*args)
+
 
 class Required(Validator):
     """ Validates that the field contains data.
     """
-    default_template = 'Value is required.'
+    templates = {'required': 'Value is required.'}
 
     def on_missing(self):
-        return bool(self.value)
+        if bool(self.value):
+            return True
+        else:
+            self.message('required')
+            return False
+
 
 
 class String(Validator):
@@ -103,33 +91,36 @@ class HasLength(Validator):
         return True if hasattr(self.value, '__len__') else False
 
 
-class PresetsBase(Validator):
-    """ Base class for `IsIn` and `NotIn` validators.
+class IsIn(Validator):
+    """ Validates that the data is in presets.
     """
-    def template_params(self):
-        to_str = lambda x: str(x) if not isinstance(x, string_types) else x
-        return ', '.join(map(to_str, self.presets)),
+    templates = {'default': 'Value have to be in: ({0}).'}
+
+    def on_value(self):
+        if self.value in self.presets:
+            return True
+        else:
+            self.message('default', self.presets)
+            return False
 
     def __call__(self, presets):
         return self.context(presets=presets)
 
 
-class IsIn(PresetsBase):
-    """ Validates that the data is in presets.
-    """
-    default_template = 'Value not in presets: ({0}).'
-
-    def on_value(self):
-        return self.value in self.presets
-
-
-class NotIn(PresetsBase):
+class NotIn(Validator):
     """ Validates that the data is not in presets.
     """
-    default_template = 'Value have not to be in presets: ({0}).'
+    templates = {'default': "Value don't have to be in: ({0})."}
 
     def on_value(self):
-        return self.value not in self.presets
+        if self.value not in self.presets:
+            return True
+        else:
+            self.message('default', self.presets)
+            return False
+
+    def __call__(self, presets):
+        return self.context(presets=presets)
 
 
 class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
@@ -141,16 +132,20 @@ class RegexpValidator(String, with_metaclass(abc.ABCMeta)):
 
     @abc.abstractmethod
     def get_regexp_str(self):
-        """"""
+        pass
 
     def on_value(self):
-        return True if not self.value or self.regex.match(self.value) else False
+        if not self.value or self.regex.match(self.value):
+            return True
+        else:
+            self.message('default')
+            return False
 
 
 class IsURL(RegexpValidator):
     """ Validates that the data is a valid URL.
     """
-    default_template = 'Invalid URL.'
+    templates = {'default': 'Invalid URL.'}
 
     def get_regexp_str(self):
         require_tld = self._kwargs.get('require_tld', True)
@@ -163,34 +158,66 @@ class Length(HasLength):
     """ Validates that the length of data more than min length and
     less than max.
     """
-    default_template = 'Length must be between {0} and {1}.'
-
-    def template_params(self):
-        return str(self.min), str(self.max)
+    templates = {
+        'max': 'Length must be less than {0}.',
+        'min': 'Length must be more than {0}.',
+        'both': 'Length must be between {0} and {1}.',
+    }
 
     def on_value(self):
-        return self.max >= len(self.value) >= self.min
+        if self.max and self.min:
+            if self.max >= len(self.value) >= self.min:
+                return True
+            else:
+                self.message('both', self.min, self.max)
+                return False
+        elif self.max:
+            if self.max >= len(self.value):
+                return True
+            else:
+                self.message('max', self.max)
+                return False
+        else:
+            if len(self.value) >= self.min:
+                return True
+            else:
+                self.message('min', self.min)
+                return False
 
     def __call__(self, min=-1, max=sys.maxsize):
-        assert min != -1 and max != sys.maxsize,\
-            ('`min` and `max` parameters must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
         return self.context(min=min, max=max)
 
 
 class InRange(Validator):
     """Validates that data more than min and less than max"""
-    default_template = "Value must be between {0} and {1}."
-
-    def template_params(self):
-        return str(self.min), str(self.max)
+    templates = {
+        'max': 'Value must be less than {0}.',
+        'min': 'Value must be more than {0}.',
+        'both': 'Value must be between {0} and {1}.',
+    }
 
     def on_value(self):
-        return self.max >= self.value >= self.min
+        if self.max and self.min:
+            if self.max >= self.value >= self.min:
+                return True
+            else:
+                self.message('both', self.min, self.max)
+                return False
+        elif self.max:
+            if self.max >= self.value:
+                return True
+            else:
+                self.message('max', self.max)
+                return False
+        else:
+            if self.value >= self.min:
+                return True
+            else:
+                self.message('min', self.min)
+                return False
 
     def __call__(self, min=None, max=None):
-        assert min is not None and max is not None,\
-            ('`min` and `max` parameters must be specified.')
         assert min <= max, '`min` cannot be more than `max`.'
         return self.context(min=min, max=max)
 
