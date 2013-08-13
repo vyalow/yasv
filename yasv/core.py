@@ -193,6 +193,7 @@ class Schema(with_metaclass(SchemaMeta)):
             for field in self.values():
                 if not field.is_valid:
                     self._is_valid = False
+            self._is_validated = True
 
     @property
     def is_valid(self):
@@ -201,6 +202,10 @@ class Schema(with_metaclass(SchemaMeta)):
         if not self._is_validated:
             self.validate()
         return self._is_valid
+
+    @is_valid.setter
+    def is_valid(self, value):
+        self._is_valid = value
 
     def get_errors(self):
         """ Return a dict of field_name: [field_errors].
