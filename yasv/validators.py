@@ -41,6 +41,7 @@ class Validator(object):
     def validate(self, field, fields):
         self.value = field.cleaned_data
         self.fields = fields
+        self.field = field
         if not self.apply_rules():
             raise ValidationError(self.process_template(field))
 
