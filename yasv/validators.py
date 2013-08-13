@@ -10,20 +10,12 @@ from yasv.errors import ValidationError
 __all__ = [
     'Validator',
     'required', 'Required',
-    'not_blank', 'NotBlank',
-    'not_empty', 'NotEmpty',
     'is_url', 'IsURL',
     'is_in', 'IsIn',
     'not_in', 'NotIn',
     'length', 'Length',
     'in_range', 'InRange',
 ]
-
-
-class NotSpecifiedValue(object):
-
-    def __str__(self):
-        return ''
 
 
 class Validator(object):
@@ -93,28 +85,7 @@ class Required(Validator):
     default_template = 'Value is required.'
 
     def on_missing(self):
-        return False if isinstance(self.value, NotSpecifiedValue) else True
-
-
-class NotBlank(Validator):
-    """ Validates that the data is not emty string or list or dict etc.
-    """
-    default_template = "Value couldn't be blank."
-
-    def on_blank(self):
-        if hasattr(self.value, 'strip'):
-            self.value = self.value.strip()
-
-        if self.value in ('', [], {}, None, set()):
-            return False
-        else:
-            return True
-
-
-class NotEmpty(Required, NotBlank):
-    """ Validates that the field contains data and it is not blank.
-    """
-    default_template = "Value couldn't be empty."
+        return bool(self.value)
 
 
 class String(Validator):
@@ -228,8 +199,6 @@ class InRange(Validator):
 
 
 required = Required()
-not_blank = NotBlank()
-not_empty = NotEmpty()
 is_in = IsIn()
 not_in = NotIn()
 is_url = IsURL()

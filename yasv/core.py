@@ -1,6 +1,6 @@
 from six import with_metaclass, iteritems, itervalues, string_types
 
-from yasv.validators import Validator, NotSpecifiedValue
+from yasv.validators import Validator
 from yasv.errors import InvalidCleanedDataError, ValidationError
 
 
@@ -19,8 +19,8 @@ class Field(object):
         self._kwargs = kwargs
         self.validators = []
         self._label = None
-        self.raw_data = NotSpecifiedValue()
-        self._cleaned_data = NotSpecifiedValue()
+        self.raw_data = None
+        self._cleaned_data = None
         self.errors = []
         self._is_valid = True
         self._is_validated = False
@@ -77,7 +77,11 @@ class Field(object):
                     validator.validate(self, self._schema)
                 except ValidationError as e:
                     self._is_valid = False
-                    self.errors.append(e.message)
+                    if e.message:
+                        self.errors.append(e.message)
+                    # Do not run subsequent validators, because field is
+                    # already invalid.
+                    break
 
 
 class SchemaMeta(type):
