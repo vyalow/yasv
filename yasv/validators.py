@@ -36,8 +36,7 @@ class Validator(object):
             self.template = self.default_template
 
     def apply_rules(self):
-        return (self.specified_type() and self.on_missing() and self.on_blank()
-                and self.on_value())
+        return self.specified_type() and self.on_missing() and self.on_value()
 
     def validate(self, field, fields):
         self.value = field.cleaned_data
@@ -51,9 +50,6 @@ class Validator(object):
         return ()
 
     def on_missing(self):
-        return True
-
-    def on_blank(self):
         return True
 
     def on_value(self):
