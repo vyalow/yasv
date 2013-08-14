@@ -65,7 +65,7 @@ class String(Validator):
     """ Base class for validators. Check that the data is instance of
     str or unicode.
     """
-    templates = {'wrong type': 'Illegal type. String expected: {0}.'}
+    templates = {'wrong_type': 'Illegal type. String expected: {0}.'}
 
     def specified_type(self):
         if isinstance(self.value, string_types):
