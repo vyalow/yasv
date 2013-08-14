@@ -79,7 +79,8 @@ class Field(object):
                     break
 
     def add_error(self, message):
-        self.errors.append(message)
+        if message:
+            self.errors.append(message)
 
 
 class SchemaMeta(type):
