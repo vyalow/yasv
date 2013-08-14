@@ -15,7 +15,6 @@ class Validator(object):
     def __init__(self, *args, **kwargs):
         self._args = args
         self._kwargs = kwargs
-        self._message = ''
 
     def on_missing(self):
         return True
@@ -34,7 +33,7 @@ class Validator(object):
         self.fields = fields
         self.field = field
         if not self.apply_rules():
-            raise ValidationError(self._message)
+            raise ValidationError()
 
         field._cleaned_data = self.value
 
@@ -45,7 +44,7 @@ class Validator(object):
         return instance
 
     def message(self, key, *args):
-        self._message = self.templates.get(key, '').format(*args)
+        self.field.add_error(self.templates.get(key, '').format(*args))
 
 
 class Required(Validator):

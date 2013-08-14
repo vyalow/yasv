@@ -72,13 +72,14 @@ class Field(object):
             for validator in self.validators:
                 try:
                     validator.validate(self, self._schema)
-                except ValidationError as e:
+                except ValidationError:
                     self._is_valid = False
-                    if e.message:
-                        self.errors.append(e.message)
                     # Do not run subsequent validators, because field is
                     # already invalid.
                     break
+
+    def add_error(self, message):
+        self.errors.append(message)
 
 
 class SchemaMeta(type):
