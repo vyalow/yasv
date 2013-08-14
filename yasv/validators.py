@@ -16,6 +16,10 @@ class Validator(object):
         self._args = args
         self._kwargs = kwargs
 
+        for arg in args:
+            if isinstance(arg, basestring):
+                self.templates = {'default': arg}
+
     def on_missing(self):
         return True
 
