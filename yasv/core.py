@@ -1,7 +1,7 @@
 from six import with_metaclass, iteritems, itervalues, string_types
 
 from yasv.validators import Validator
-from yasv.errors import InvalidCleanedDataError, ValidationError
+from yasv.errors import ValidationError
 
 
 class Field(object):
@@ -36,11 +36,7 @@ class Field(object):
     def cleaned_data(self):
         if not self._is_validated:
             self.validate()
-        if self.is_valid:
-            return self._cleaned_data
-        else:
-            raise InvalidCleanedDataError("Field is invalid. It doesn't have "
-                                          "cleaned data", self.name, self.label)
+        return self._cleaned_data
 
     @cleaned_data.setter
     def cleaned_data(self, value):
