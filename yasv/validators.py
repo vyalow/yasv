@@ -30,7 +30,9 @@ class Validator(object):
         return True
 
     def apply_rules(self):
-        return self.specified_type() and self.on_missing() and self.on_value()
+        res = self.specified_type() and self.on_missing() and self.on_value()
+        self.field._cleaned_data = self.value
+        return res
 
     def validate(self, field, fields):
         self.value = field.cleaned_data
@@ -40,7 +42,6 @@ class Validator(object):
         if not self.apply_rules():
             raise ValidationError()
 
-        field._cleaned_data = self.value
 
     def context(self, *args, **kwargs):
         instance = self.__class__(*self._args, **self._kwargs)
